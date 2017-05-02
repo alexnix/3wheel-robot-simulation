@@ -1,0 +1,166 @@
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<!-- Jquery -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+(function() {
+	var timeouts = [];
+	var messageName = "zero-timeout-message";
+
+	function setZeroTimeout(fn) {
+		timeouts.push(fn);
+		window.postMessage(messageName, "*");
+	}
+
+	function handleMessage(event) {
+		if (event.source == window && event.data == messageName) {
+			event.stopPropagation();
+			if (timeouts.length > 0) {
+				var fn = timeouts.shift();
+				fn();
+			}
+		}
+	}
+
+	window.addEventListener("message", handleMessage, true);
+
+	window.setZeroTimeout = setZeroTimeout;
+})();
+
+var Neuvol;
+var game;
+var FPS = 60;
+var size = 30;
+
+// var Robot = function() {
+// 	this.x = ;
+// 	this.y = ;
+// 	this.theta = 90;
+
+// }
+
+function robotAt(c, context) {
+	
+
+	var rotation = game.theta;
+
+	var dp1 = Util.movement(0, size, rotation);
+	var dp2 = Util.movement(size, -size, rotation);
+	var dp3 = Util.movement(-size, -size, rotation);
+
+
+	context.fillStyle = "#FFCC00";
+	context.beginPath();
+	context.moveTo(c.x + dp1.dx, c.y + dp1.dy);
+	context.lineTo(c.x + dp2.dx, c.y + dp2.dy);
+	context.lineTo(c.x + dp3.dx, c.y + dp3.dy);
+	context.closePath();
+	context.fill();
+
+	context.fillStyle = "#FF0000";
+	context.beginPath();
+	context.fillRect(c.x + dp1.dx, c.y + dp1.dy, 5, 5);
+	context.fillRect(c.x, c.y, 5, 5); 
+	context.closePath();
+	context.fill();
+
+}
+
+var Util = {
+	movement: function(dx, dy, theta) {
+		return {
+			dx: dx*Math.cos(theta) - dy*Math.sin(theta),
+			dy: dx*Math.sin(theta) + dy*Math.cos(theta),
+		}
+	}
+}
+
+var Robot = function() {
+	this.x = 250;
+	this.y = 250;
+	this.theta = Math.PI/2;
+}
+
+var speed = function(fps){
+	FPS = parseInt(fps);
+}
+
+var Game = function(){
+	this.rp = {x: 250, y: 250};
+	this.theta = Math.PI;
+	var canvas = $("#canvas")[0];
+	this.ctx = canvas.getContext("2d");
+	this.width = $("#canvas").width();
+	this.height = $("#canvas").height();
+}
+
+Game.prototype.start = function(){
+	
+}
+
+Game.prototype.update = function(){
+	// this.rp.y -= 1;
+	
+	var self = this;
+	if(FPS == 0){
+		setZeroTimeout(function(){
+			self.update();
+		});
+	}else{
+		setTimeout(function(){
+			self.update();
+		}, 1000/FPS);
+	}
+}
+
+Game.prototype.display = function(){
+	this.ctx.clearRect(0, 0, this.width, this.height);
+	robotAt(this.rp, this.ctx);
+	var self = this;
+	requestAnimationFrame(function(){
+		self.display();
+	});
+}
+
+$(document).ready(function(){
+	game = new Game();
+	game.start();
+	game.update();
+	game.display();
+
+	$(document).keydown(function(e){
+		var key = e.which;
+		//We will add another clause to prevent reverse gear
+
+		console.log(key);
+		if(key == "37") 
+		{
+			d = Util.movement(1, 0, game.theta);
+			game.rp.x += d.dx;
+			game.rp.y += d.dy;
+		}
+		else if(key == "38") 
+		{
+			d = Util.movement(0, 1, game.theta);
+			game.rp.x += d.dx;
+			game.rp.y += d.dy;
+		}
+		else if(key == "39") 
+		{
+			d = Util.movement(-1, 0, game.theta);
+			game.rp.x += d.dx;
+			game.rp.y += d.dy;
+		}
+		else if(key == "40")
+		{
+			d = Util.movement(0, -1, game.theta);
+			game.rp.x += d.dx;
+			game.rp.y += d.dy;
+		}
+		else if(key == "82") game.theta += 0.1;
+		else if(key == "69") game.theta -= 0.1;
+	})
+});
+</script>
