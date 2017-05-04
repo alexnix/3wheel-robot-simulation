@@ -50,16 +50,17 @@ var Robot = function() {
 	this.theta = 1/2*Math.PI;
 	this.score = 0;
 	this.alive = true;
+	this.steps = 0;
 }
 
 Robot.prototype.isDead = function() {
-	return false;
+	return this.steps++==600;
 }
 
 Robot.prototype.move = function(f) {
 	this.x += f[0];
 	this.y += f[1];
-	this.theta += f[3];
+	this.theta += f[2];
 }
 
 Robot.prototype.display = function() {
@@ -87,6 +88,33 @@ var speed = function(fps){
 	FPS = parseInt(fps);
 }
 
+var Target = function() {
+	this.x = 250;
+	this.y = 250;
+	this.dest_x = Math.round(Math.random() * game.width);
+	this.dest_y = Math.round(Math.random() * game.height);
+}
+
+Target.prototype.display = function() {
+	game.context.fillStyle = "#0000FF";
+	game.context.fillRect(this.x, this.y, 5, 5); 
+	game.context.fill();
+}
+
+Target.prototype.update = function() {
+	if(this.x != this.dest_x) {
+		this.x += this.x > this.dest_x ? -1 : 1;
+	} else {
+		this.dest_x = Math.round(Math.random() * game.width);
+	}
+
+	if(this.y != this.dest_y) {
+		this.y += this.y > this.dest_y ? -1 : 1;
+	} else {
+		this.dest_y = Math.round(Math.random() * game.height);
+	}
+}
+
 var Game = function(){
 	var canvas = $("#canvas")[0];
 	this.context = canvas.getContext("2d");
@@ -96,10 +124,16 @@ var Game = function(){
 	this.robots = [];
 	this.generation = 0;
 	this.alives = 0;
+	this.target = {
+		x: 250,
+		y: 250,
+	};
+	this.target;
 }
 
 Game.prototype.start = function(){
 	this.robots = [];
+	this.target = new Target();
 	this.gen = Neuvol.nextGeneration();
 	for(var i in this.gen) {
 		this.robots.push(new Robot());
@@ -109,9 +143,10 @@ Game.prototype.start = function(){
 }
 
 Game.prototype.update = function(){
-	// if(this.isItEnd()){
-	// 	this.start();
-	// }
+	if(this.alives == 0){
+		this.start();
+	}
+	this.target.update();
 	for(var i in this.robots) {
 		if(this.robots[i].alive) {
 			var inputs = [
@@ -121,12 +156,16 @@ Game.prototype.update = function(){
 			var f = this.gen[i].compute(inputs);
 
 			this.robots[i].move(f);
+			this.robots[i].score += Math.sqrt(
+					(this.robots[i].x - this.target.x)*(this.robots[i].x - this.target.x) +
+					(this.robots[i].y - this.target.y)*(this.robots[i].y - this.target.y) 
+				);
 
-			// if(this.robots[i].isDead()) {
-			// 	this.robots[i].alive = false;
-			// 	this.alives--;
-			// 	Neuvol.networkScore(this.gen[i], this.robots[i].score);
-			// }
+			if(this.robots[i].isDead()) {
+				this.robots[i].alive = false;
+				this.alives--;
+				Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+			}
 		}
 	}
 
@@ -138,7 +177,7 @@ Game.prototype.update = function(){
 	}else{
 		setTimeout(function(){
 			self.update();
-		}, 1000/FPS);
+		}, 100/FPS);
 	}
 }
 
@@ -147,6 +186,7 @@ Game.prototype.display = function(){
 	for(var i in this.robots) {
 		this.robots[i].display();
 	}
+	this.target.display();
 	var self = this;
 	requestAnimationFrame(function(){
 		self.display();
