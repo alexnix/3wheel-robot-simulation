@@ -87,32 +87,32 @@ var Robot = function() {
 }
 
 Robot.prototype.isDead = function() {
-	return this.steps++==600;
+	return this.steps ++== 1000;
 }
 
 Robot.prototype.move = function(f) {
-	this.x += f[0];
-	this.y += f[1];
-	this.theta += f[2];
+	this.x += (f[0] > 0.5 ? 1 : -1);
+	this.y += (f[1] > 0.5 ? 1 : -1);
+	// this.theta += f[2];
 	this.path.push([this.x, this.y]);
 }
 
 Robot.prototype.display = function() {
-	var dp1 = Util.movement(0, size, this.theta);
-	var dp2 = Util.movement(size, -size, this.theta);
-	var dp3 = Util.movement(-size, -size, this.theta);
+	// var dp1 = Util.movement(0, size, this.theta);
+	// var dp2 = Util.movement(size, -size, this.theta);
+	// var dp3 = Util.movement(-size, -size, this.theta);
 
-	game.context.fillStyle = "#FFCC00";
-	game.context.beginPath();
-	game.context.moveTo(this.x + dp1.dx, this.y + dp1.dy);
-	game.context.lineTo(this.x + dp2.dx, this.y + dp2.dy);
-	game.context.lineTo(this.x + dp3.dx, this.y + dp3.dy);
-	game.context.closePath();
-	game.context.fill();
+	// game.context.fillStyle = "#FFCC00";
+	// game.context.beginPath();
+	// game.context.moveTo(this.x + dp1.dx, this.y + dp1.dy);
+	// game.context.lineTo(this.x + dp2.dx, this.y + dp2.dy);
+	// game.context.lineTo(this.x + dp3.dx, this.y + dp3.dy);
+	// game.context.closePath();
+	// game.context.fill();
 
 	game.context.fillStyle = "#FF0000";
 	game.context.beginPath();
-	game.context.fillRect(this.x + dp1.dx, this.y + dp1.dy, 5, 5);
+	// game.context.fillRect(this.x + dp1.dx, this.y + dp1.dy, 5, 5);
 	game.context.fillRect(this.x, this.y, 5, 5); 
 	game.context.closePath();
 	game.context.fill();	
@@ -186,7 +186,8 @@ Game.prototype.update = function(){
 	for(var i in this.robots) {
 		if(this.robots[i].alive) {
 			var inputs = [
-				2, 2
+				this.target.x/this.width, this.target.y/this.height,
+				this.robots[i].x/this.width, this.robots[i].y/this.height
 			];
 
 			var f = this.gen[i].compute(inputs);
@@ -200,7 +201,8 @@ Game.prototype.update = function(){
 			if(this.robots[i].isDead()) {
 				this.robots[i].alive = false;
 				this.alives--;
-				Neuvol.networkScore(this.gen[i], 1/Util.discreteFrechetDistance(this.robots[i].path, game.target.path));
+				//Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
+				Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
 			}
 		}
 	}
@@ -238,8 +240,8 @@ Game.prototype.isItEnd = function() {
 
 $(document).ready(function(){
 	Neuvol = new Neuroevolution({
-		population: 20,
-		network:[2, [6, 4], 3],
+		population: 50,
+		network:[4, [4], 2],
 		elitism: 0.3,            
     	randomBehaviour:0.6,
     	mutationRate:0.3, 
