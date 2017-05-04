@@ -41,6 +41,38 @@ var Util = {
 			dx: dx*Math.cos(theta) - dy*Math.sin(theta),
 			dy: dx*Math.sin(theta) + dy*Math.cos(theta),
 		}
+	},
+	/* Discrete Fréchet Distance
+ 	 * By Andreas Argelius http://argeli.us/ */
+	discreteFrechetDistance: function(a, b) {
+	    var dist = function(p1, p2) {
+	      return Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2)); 
+	    };
+
+	    var C = new Float32Array(a.length * b.length),
+	      dim = a.length,
+	      i, j;
+
+	    C[0] = dist(a[0], b[0]);
+
+	    for (j = 1; j < dim; j++) {
+	      C[j] = Math.max(C[j-1], dist(a[0], b[j]));
+	    }
+
+	    for (i = 1; i < dim; i++) {
+	      C[i*dim] = Math.max(C[(i-1)*dim], dist(a[i], b[0]));
+	    }
+
+	    for (i = 1; i < dim; i++ ) {
+	      for (j = 1; j < dim; j++) {
+	        C[i*dim+j] = Math.max(
+	          Math.min(C[(i-1)*dim+j], C[(i-1)*dim+j-1], C[i*dim+j-1]),
+	          dist(a[i], b[j])
+	        );
+	      }
+	    }
+
+	    return C[C.length-1];
 	}
 }
 
@@ -51,6 +83,7 @@ var Robot = function() {
 	this.score = 0;
 	this.alive = true;
 	this.steps = 0;
+	this.path = [];
 }
 
 Robot.prototype.isDead = function() {
@@ -61,6 +94,7 @@ Robot.prototype.move = function(f) {
 	this.x += f[0];
 	this.y += f[1];
 	this.theta += f[2];
+	this.path.push([this.x, this.y]);
 }
 
 Robot.prototype.display = function() {
@@ -93,6 +127,7 @@ var Target = function() {
 	this.y = 250;
 	this.dest_x = Math.round(Math.random() * game.width);
 	this.dest_y = Math.round(Math.random() * game.height);
+	this.path = [];
 }
 
 Target.prototype.display = function() {
@@ -113,6 +148,7 @@ Target.prototype.update = function() {
 	} else {
 		this.dest_y = Math.round(Math.random() * game.height);
 	}
+	this.path.push([this.x, this.y]);
 }
 
 var Game = function(){
@@ -164,7 +200,7 @@ Game.prototype.update = function(){
 			if(this.robots[i].isDead()) {
 				this.robots[i].alive = false;
 				this.alives--;
-				Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+				Neuvol.networkScore(this.gen[i], 1/Util.discreteFrechetDistance(this.robots[i].path, game.target.path));
 			}
 		}
 	}
@@ -177,7 +213,7 @@ Game.prototype.update = function(){
 	}else{
 		setTimeout(function(){
 			self.update();
-		}, 100/FPS);
+		}, 1/FPS);
 	}
 }
 
