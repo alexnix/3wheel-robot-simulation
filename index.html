@@ -1,8 +1,50 @@
 <canvas id="canvas" width="500" height="500"></canvas>
-
+<div id="chart_div"></div>
 <!-- Jquery -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
+<script type="text/javascript">
+	// Load the Visualization API and the corechart package.
+	google.charts.load('current', {'packages':['corechart', 'line']});
+
+	// Set a callback to run when the Google Visualization API is loaded.
+	google.charts.setOnLoadCallback(drawChart);
+	// Callback that creates and populates a data table,
+	// instantiates the pie chart, passes in the data and
+	// draws it.
+	var data, chart, t = 1;
+	
+	function drawChart() {	
+		data = new google.visualization.DataTable();
+		data.addColumn('number', 'Generatia');
+		data.addColumn('number', 'Fitnessul celui mai bun individ');
+
+		var options = {
+		chart: {
+		  title: 'Evolutia fitness-ului',
+		},
+		width: 900,
+		height: 500,
+		axes: {
+		  x: {
+		    0: {side: 'bottom'}
+		  }
+		}
+		};
+
+		chart = new google.charts.Line(document.getElementById('chart_div'));
+
+		chart.draw(data, google.charts.Line.convertOptions(options));
+	}
+	function add(val) {
+		console.log(val);
+		data.addRows([[t++, val]]);
+		chart.draw(data);
+	}
+	
+</script>
+    
 <script src = "Neuroevolution.js"></script>
 
 <script type="text/javascript">
@@ -98,17 +140,17 @@ Robot.prototype.move = function(f) {
 }
 
 Robot.prototype.display = function() {
-	// var dp1 = Util.movement(0, size, this.theta);
-	// var dp2 = Util.movement(size, -size, this.theta);
-	// var dp3 = Util.movement(-size, -size, this.theta);
+	var dp1 = Util.movement(0, size, this.theta);
+	var dp2 = Util.movement(size, -size, this.theta);
+	var dp3 = Util.movement(-size, -size, this.theta);
 
-	// game.context.fillStyle = "#FFCC00";
-	// game.context.beginPath();
-	// game.context.moveTo(this.x + dp1.dx, this.y + dp1.dy);
-	// game.context.lineTo(this.x + dp2.dx, this.y + dp2.dy);
-	// game.context.lineTo(this.x + dp3.dx, this.y + dp3.dy);
-	// game.context.closePath();
-	// game.context.fill();
+	game.context.fillStyle = "#FFCC00";
+	game.context.beginPath();
+	game.context.moveTo(this.x + dp1.dx, this.y + dp1.dy);
+	game.context.lineTo(this.x + dp2.dx, this.y + dp2.dy);
+	game.context.lineTo(this.x + dp3.dx, this.y + dp3.dy);
+	game.context.closePath();
+	game.context.fill();
 
 	game.context.fillStyle = "#FF0000";
 	game.context.beginPath();
@@ -180,6 +222,9 @@ Game.prototype.start = function(){
 
 Game.prototype.update = function(){
 	if(this.alives == 0){
+		add(Math.min.apply(null, this.robots.map(r => {
+			return r.score;
+		})))
 		this.start();
 	}
 	this.target.update();
@@ -201,22 +246,26 @@ Game.prototype.update = function(){
 			if(this.robots[i].isDead()) {
 				this.robots[i].alive = false;
 				this.alives--;
-				//Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
+				// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
 				Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
 			}
 		}
 	}
 
 	var self = this;
-	if(FPS == 0){
-		setZeroTimeout(function(){
-			self.update();
-		});
-	}else{
-		setTimeout(function(){
-			self.update();
-		}, 1/FPS);
-	}
+	setTimeout(function(){
+		console.log(1);
+		self.update();
+	}, 1);
+	// if(FPS == 0){
+	// 	setZeroTimeout(function(){
+	// 		self.update();
+	// 	});
+	// }else{
+	// 	setTimeout(function(){
+	// 		self.update();
+	// 	}, 1/FPS);
+	// }
 }
 
 Game.prototype.display = function(){
@@ -247,43 +296,14 @@ $(document).ready(function(){
     	mutationRate:0.3, 
     	mutationRange:0.3, 
 	});
-	game = new Game();
-	game.start();
-	game.update();
-	game.display();
-
-	$(document).keydown(function(e){
-		var key = e.which;
-		//We will add another clause to prevent reverse gear
-
-		console.log(key);
-		if(key == "37") 
-		{
-			d = Util.movement(1, 0, game.robots[0].theta);
-			game.robots[0].x += d.dx;
-			game.robots[0].y += d.dy;
-		}
-		else if(key == "38") 
-		{
-			d = Util.movement(0, 1, game.robots[0].theta);
-			game.robots[0].x += d.dx;
-			game.robots[0].y += d.dy;
-		}
-		else if(key == "39") 
-		{
-			d = Util.movement(-1, 0, game.robots[0].theta);
-			game.robots[0].x += d.dx;
-			game.robots[0].y += d.dy;
-		}
-		else if(key == "40")
-		{
-			d = Util.movement(0, -1, game.robots[0].theta);
-			game.robots[0].x += d.dx;
-			game.robots[0].y += d.dy;
-		}
-		else if(key == "82") game.robots[0].theta += 0.1;
-		else if(key == "69") game.robots[0].theta -= 0.1;
-	})
+	setTimeout(() => {
+		game = new Game();
+		game.start();
+		// while(1) 
+			game.update();
+	}, 1000)
+	
+	// game.display();
 
 });
 </script>
