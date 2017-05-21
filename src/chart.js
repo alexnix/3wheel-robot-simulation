@@ -1,3 +1,4 @@
+define(['chart-loader'], function(){
 	// Load the Visualization API and the corechart package.
 	google.charts.load('current', {'packages':['corechart', 'line']});
 
@@ -30,9 +31,10 @@
 
 		chart.draw(data, google.charts.Line.convertOptions(options));
 	}
-	function add(val) {
+	window.add = function(val) {
 		console.log(val);
 		data.addRows([[t++, val]]);
 		chart.draw(data);
-	}
-	
+	}	
+
+});
