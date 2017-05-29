@@ -69,7 +69,7 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(){
 
 		var self = this;
 		setTimeout(function(){
-			console.log(1);
+			// console.log(1);
 			self.update();
 		}, 1);
 		// if(FPS == 0){
