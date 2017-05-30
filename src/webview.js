@@ -120,6 +120,7 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 			this.alives--;
 			Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
 		}
+
 	}
 
 	game = new Game();
