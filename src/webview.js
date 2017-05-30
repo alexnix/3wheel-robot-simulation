@@ -33,7 +33,20 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 		this.context = canvas.getContext("2d");
 		this.width = canvas.width;
 		this.height = canvas.height;
-		this.gen = [];
+		
+		this.gen = Neuvol.nextGeneration();
+		// var saved_generation_str = Android.restoreGeneration();
+		// if(saved_generation_str != '') {
+		// 	var saved_generation = JSON.parse(saved_generation_str);
+		// 	// [score: , network:save]
+		// 	saved_generation.forEach(function(genome){
+		// 		var nn = new Network();
+		// 		nn.setSave(JSON.parse(genome.nn_str));
+		// 		Neuvol.networkScore(nn, genome.score)
+		// 	})
+		// }
+
+
 		this.robots = [];
 		this.generation = 0;
 		this.alives = 0;
@@ -108,19 +121,30 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 	}
 
 	Game.prototype.end = function() {
-		
-		if (typeof(Storage) !== "undefined") {
-		    loclaStorage.last_gen = JSON.stringify(this.gen);
-		} else {
-		    alert("No support for local storage.")''
-		}
+
+		var genomes = [];
+
+		var max_score = 1/this.robots[0].score;
+		var max_score_idx = 0
 
 		for(var i in this.robots) {
 			this.robots[i].alive = false;
 			this.alives--;
 			Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+
+			genomes.push({
+				score: 1/this.robots[i].score,
+				nn_str: JSON.parse(this.gen[i].getSave())
+			});
+
+			if(1/this.robots[i].score > max_score) {
+				max_score = 1/this.robots[i].score;
+				max_score_idx = i;
+			}
 		}
 
+		Android.saveGeneration(JSON.stringify(genomes));
+		Android.setBest(i);
 	}
 
 	game = new Game();
