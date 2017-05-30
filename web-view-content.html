@@ -1,14 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Simulare</title>
-</head>
-<body>
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+    
+</HEAD>
+	<BODY>
+
 	<canvas id='myCanvas' style="border:1px solid #FF0000;">
 	    Canvas not support!
 	</canvas>
 
-	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var canvasOffsetX = canvas.getBoundingClientRect().left;
+		var canvasOffsetY = canvas.getBoundingClientRect().top;
+		canvas.width = window.innerWidth - (2 * canvasOffsetX);
+		canvas.height = window.innerHeight - 2 * canvasOffsetY ;
+	</script>
+
 	<script type="text/javascript" src="node_modules/requirejs/require.js" data-main="src/webview.js"></script>
-</body>
-</html>
+
+
+	</BODY>
+</HTML>

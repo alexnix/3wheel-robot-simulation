@@ -1,4 +1,4 @@
-requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(){
+requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, chart, Robot, Target){
 	var Neuvol = new Neuroevolution({
 		population: 50,
 		network:[4, [4], 2],
@@ -37,7 +37,7 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(){
 
 	Game.prototype.update = function(){
 		if(this.alives == 0){
-			add(1/Math.min.apply(null, this.robots.map(r => {
+			chart.add(1/Math.min.apply(null, this.robots.map(r => {
 				return r.score;
 			})))
 			this.start();
@@ -102,7 +102,8 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(){
 		return true;
 	}
 
-	var game = new Game();
+	window.game = new Game();
+
 	game.start();
 	game.update();
 	game.display();

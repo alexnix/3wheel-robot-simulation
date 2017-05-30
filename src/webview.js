@@ -1,72 +1,65 @@
-requirejs(["Neuroevolution", "chart", "Robot", "touch-detector"], function(){
-	
-	var Neuvol, game, target_position, game_end;
+requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neuroevolution, Robot, Target, touchDetector){
+	var Neuvol = new Neuroevolution({
+		population: 50,
+		network:[4, [4], 2],
+		elitism: 2,            
+    	randomBehaviour:0.6,
+    	mutationRate:0.3, 
+    	mutationRange:0.3, 
+	});
+
+	var game;
 
 	touchDetector.init({
 		canvas: document.getElementById('myCanvas'),
 
-		showTrace: true,
-
-		touchstartCallback: function(x, y) {
+		touchstartCallback: function(event) {
 			game.start();
-			target_position = {
-				x: x,
-				y: y,
-			};
-			game_end = false;
+			game.target.setPosition(event.changedTouches[0].pageX,event.changedTouches[0].pageY);
 		},
 
-		touchMoveCollback: function(x, y) {
-			target_position = {
-				x: x,
-				y: y,
-			};
+		touchMoveCollback: function(event) {
+			game.target.setPosition(event.changedTouches[0].pageX,event.changedTouches[0].pageY);
 		},
 
-		touchEndCallback: function(x, y) {
-			game_end = true;
+		touchEndCallback: function(event) {
+			game.end();
 		},
+
 	});
 
 	var Game = function(){
-		var canvas = $("#canvas")[0];
+		var canvas = document.getElementById('myCanvas');
 		this.context = canvas.getContext("2d");
-		this.width = $("#canvas").width();
-		this.height = $("#canvas").height();
+		this.width = canvas.width;
+		this.height = canvas.height;
 		this.gen = [];
 		this.robots = [];
 		this.generation = 0;
 		this.alives = 0;
 		this.target = {
-			x: 250,
-			y: 250,
+			x: this.width / 2,
+			y: this.height / 2,
 		};
-		this.target;
+		this.target = new Target(this, 15);
 	}
 
 	Game.prototype.start = function(){
 		this.robots = [];
-		this.target = new Target(this);
+		this.target = new Target(this, 15);
 		this.gen = Neuvol.nextGeneration();
 		for(var i in this.gen) {
-			this.robots.push(new Robot(this));
+			this.robots.push(new Robot(this, 50));
 		}	
 		this.generation++;
 		this.alives = this.robots.length;
 	}
 
 	Game.prototype.update = function(){
-		if(this.alives == 0){
-			add(1/Math.min.apply(null, this.robots.map(r => {
-				return r.score;
-			})))
-			this.start();
-		}
-		this.target.update();
 		for(var i in this.robots) {
 			if(this.robots[i].alive) {
 				var inputs = [
-					target_position.x/this.width, target_position.y/this.height,
+					this.target.x/this.width, this.target.y/this.height,
 					this.robots[i].x/this.width, this.robots[i].y/this.height
 				];
 
@@ -89,18 +82,8 @@ requirejs(["Neuroevolution", "chart", "Robot", "touch-detector"], function(){
 
 		var self = this;
 		setTimeout(function(){
-			// console.log(1);
 			self.update();
 		}, 1);
-		// if(FPS == 0){
-		// 	setZeroTimeout(function(){
-		// 		self.update();
-		// 	});
-		// }else{
-		// 	setTimeout(function(){
-		// 		self.update();
-		// 	}, 1/FPS);
-		// }
 	}
 
 	Game.prototype.display = function(){
@@ -108,7 +91,9 @@ requirejs(["Neuroevolution", "chart", "Robot", "touch-detector"], function(){
 		for(var i in this.robots) {
 			this.robots[i].display(this.context);
 		}
-		this.target.display(this.context);
+		if(this.target) {
+			this.target.display(this.context);
+		}
 		var self = this;
 		requestAnimationFrame(function(){
 			self.display();
@@ -122,8 +107,22 @@ requirejs(["Neuroevolution", "chart", "Robot", "touch-detector"], function(){
 		return true;
 	}
 
-	var game = new Game();
+	Game.prototype.end = function() {
+		
+		if (typeof(Storage) !== "undefined") {
+		    loclaStorage.last_gen = JSON.stringify(this.gen);
+		} else {
+		    alert("No support for local storage.")''
+		}
+
+		for(var i in this.robots) {
+			this.robots[i].alive = false;
+			this.alives--;
+			Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+		}
+	}
+
+	game = new Game();
 	game.update();
 	game.display();
-
 });

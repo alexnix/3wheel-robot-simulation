@@ -31,10 +31,15 @@ define(['chart-loader'], function(){
 
 		chart.draw(data, google.charts.Line.convertOptions(options));
 	}
-	window.add = function(val) {
+	
+	var chart = {};
+
+	chart.add = function(val) {
 		console.log(val);
 		data.addRows([[t++, val]]);
 		chart.draw(data);
 	}	
+
+	return chart;
 
 });
