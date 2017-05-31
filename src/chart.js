@@ -40,6 +40,10 @@ define(['chart-loader'], function(){
 		chart.draw(data);
 	}	
 
+	chart.getData = function() {
+		
+	}
+
 	return chart;
 
 });

@@ -1,4 +1,4 @@
-requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neuroevolution, Robot, Target, touchDetector){
+requirejs(["Neuroevolution", "Robot", "Target", "touch-detector", "Network"], function(Neuroevolution, Robot, Target, touchDetector, Network){
 	var Neuvol = new Neuroevolution({
 		population: 50,
 		network:[4, [4], 2],
@@ -34,17 +34,18 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 		this.width = canvas.width;
 		this.height = canvas.height;
 		
-		this.gen = Neuvol.nextGeneration();
-		// var saved_generation_str = Android.restoreGeneration();
-		// if(saved_generation_str != '') {
-		// 	var saved_generation = JSON.parse(saved_generation_str);
-		// 	// [score: , network:save]
-		// 	saved_generation.forEach(function(genome){
-		// 		var nn = new Network();
-		// 		nn.setSave(JSON.parse(genome.nn_str));
-		// 		Neuvol.networkScore(nn, genome.score)
-		// 	})
-		// }
+		this.gen = [];
+		var saved_generation_str = Android.restoreGeneration();
+		if(saved_generation_str != '') {
+			this.gen = Neuvol.nextGeneration();
+			var saved_generation = JSON.parse(saved_generation_str);
+			// [score: , network:save]
+			saved_generation.forEach(function(genome){
+				var nn = new Network();
+				nn.setSave(JSON.parse(genome.nn_str));
+				Neuvol.networkScore(nn, genome.score)
+			})
+		}
 
 
 		this.robots = [];
@@ -88,7 +89,7 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 					this.robots[i].alive = false;
 					this.alives--;
 					// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
-					Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+					Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
 				}
 			}
 		}
@@ -124,21 +125,21 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector"], function(Neur
 
 		var genomes = [];
 
-		var max_score = 1/this.robots[0].score;
+		var max_score = 1e6/this.robots[0].score;
 		var max_score_idx = 0
 
 		for(var i in this.robots) {
 			this.robots[i].alive = false;
 			this.alives--;
-			Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+			Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
 
 			genomes.push({
-				score: 1/this.robots[i].score,
-				nn_str: JSON.parse(this.gen[i].getSave())
+				score: 1e6/this.robots[i].score,
+				nn_str: JSON.stringify(this.gen[i].getSave())
 			});
 
-			if(1/this.robots[i].score > max_score) {
-				max_score = 1/this.robots[i].score;
+			if(1e6/this.robots[i].score > max_score) {
+				max_score = 1e6/this.robots[i].score;
 				max_score_idx = i;
 			}
 		}

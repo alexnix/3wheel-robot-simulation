@@ -1,7 +1,22 @@
 requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, chart, Robot, Target){
+	var saveData = (function () {
+	    var a = document.createElement("a");
+	    document.body.appendChild(a);
+	    a.style = "display: none";
+	    return function (data, fileName) {
+	        var json = JSON.stringify(data),
+	            blob = new Blob([json], {type: "octet/stream"}),
+	            url = window.URL.createObjectURL(blob);
+	        a.href = url;
+	        a.download = fileName;
+	        a.click();
+	        window.URL.revokeObjectURL(url);
+	    };
+	}());
+
 	var Neuvol = new Neuroevolution({
 		population: 50,
-		network:[4, [4], 2],
+		network:[2, [4], 2],
 		elitism: 2,            
     	randomBehaviour:0.6,
     	mutationRate:0.3, 
@@ -37,7 +52,7 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolutio
 
 	Game.prototype.update = function(){
 		if(this.alives == 0){
-			chart.add(1/Math.min.apply(null, this.robots.map(r => {
+			chart.add(1e6/Math.min.apply(null, this.robots.map(r => {
 				return r.score;
 			})))
 			this.start();
@@ -46,8 +61,8 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolutio
 		for(var i in this.robots) {
 			if(this.robots[i].alive) {
 				var inputs = [
-					this.target.x/this.width, this.target.y/this.height,
-					this.robots[i].x/this.width, this.robots[i].y/this.height
+					(this.robots[i].x - this.target.x) / this.width,
+					(this.robots[i].y - this.target.y) / this.height
 				];
 
 				var f = this.gen[i].compute(inputs);
@@ -62,7 +77,7 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolutio
 					this.robots[i].alive = false;
 					this.alives--;
 					// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
-					Neuvol.networkScore(this.gen[i], 1/this.robots[i].score);
+					Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
 				}
 			}
 		}
@@ -100,6 +115,36 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolutio
 			if(this.robots[i].alive)
 				return true;
 		return true;
+	}
+
+	Game.prototype.saveGeneration = function() {
+
+		var genomes = [];
+
+		var max_score = 1e6/this.robots[0].score;
+		var max_score_idx = 0
+
+		for(var i in this.robots) {
+			this.robots[i].alive = false;
+			this.alives--;
+			Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
+
+			genomes.push({
+				score: 1e6/this.robots[i].score,
+				nn_str: JSON.stringify(this.gen[i].getSave())
+			});
+
+			if(1e6/this.robots[i].score > max_score) {
+				max_score = 1e6/this.robots[i].score;
+				max_score_idx = i;
+			}
+		}
+
+		saveData(genomes, "saved_generation.json");
+	}
+
+	Game.prototype.saveChartData = function(name) {
+
 	}
 
 	window.game = new Game();
