@@ -55,8 +55,8 @@ define([], function(){
 	}
 
 	Robot.prototype.move = function(f) {
-		this.x += (f[0] > 0.5 ? 1 : -1);
-		this.y += (f[1] > 0.5 ? 1 : -1);
+		this.x += (f[0] > 0.5 ? 3 : -3);
+		this.y += (f[1] > 0.5 ? 3 : -3);
 		// this.theta += f[2];
 		this.path.push([this.x, this.y]);
 	}

@@ -1,7 +1,7 @@
 requirejs(["Neuroevolution", "Robot", "Target", "touch-detector", "Network"], function(Neuroevolution, Robot, Target, touchDetector, Network){
 	var Neuvol = new Neuroevolution({
 		population: 50,
-		network:[4, [4], 2],
+		network:[2, [4], 2],
 		elitism: 2,            
     	randomBehaviour:0.6,
     	mutationRate:0.3, 
@@ -71,26 +71,24 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector", "Network"], fu
 
 	Game.prototype.update = function(){
 		for(var i in this.robots) {
-			if(this.robots[i].alive) {
-				var inputs = [
-					this.target.x/this.width, this.target.y/this.height,
-					this.robots[i].x/this.width, this.robots[i].y/this.height
-				];
+			var inputs = [
+				(this.robots[i].x - this.target.x) / this.width,
+				(this.robots[i].y - this.target.y) / this.height
+			];
 
-				var f = this.gen[i].compute(inputs);
+			var f = this.gen[i].compute(inputs);
 
-				this.robots[i].move(f);
-				this.robots[i].score += Math.sqrt(
-						(this.robots[i].x - this.target.x)*(this.robots[i].x - this.target.x) +
-						(this.robots[i].y - this.target.y)*(this.robots[i].y - this.target.y) 
-					);
+			this.robots[i].move(f);
+			this.robots[i].score += Math.sqrt(
+					(this.robots[i].x - this.target.x)*(this.robots[i].x - this.target.x) +
+					(this.robots[i].y - this.target.y)*(this.robots[i].y - this.target.y) 
+				);
 
-				if(this.robots[i].isDead()) {
-					this.robots[i].alive = false;
-					this.alives--;
-					// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
-					Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
-				}
+			if(this.robots[i].isDead()) {
+				this.robots[i].alive = false;
+				this.alives--;
+				// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
+				Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
 			}
 		}
 
@@ -115,10 +113,7 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector", "Network"], fu
 	}
 
 	Game.prototype.isItEnd = function() {
-		for(var i in this.robots) 
-			if(this.robots[i].alive)
-				return true;
-		return true;
+		return false;
 	}
 
 	Game.prototype.end = function() {
@@ -146,6 +141,8 @@ requirejs(["Neuroevolution", "Robot", "Target", "touch-detector", "Network"], fu
 
 		Android.saveGeneration(JSON.stringify(genomes));
 		Android.setBest(i);
+
+		this.robots = [];
 	}
 
 	game = new Game();
