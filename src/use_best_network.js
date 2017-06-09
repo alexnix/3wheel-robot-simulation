@@ -1,11 +1,12 @@
-requirejs(['Network'], function(Network){
+define(['Network'], function(Network){
 	var saved_generation_str = Android.restoreGeneration();
-	
+
 	if(saved_generation_str != '') {
 		var saved_generation = JSON.parse(saved_generation_str);
-		var best_genome = saved_generation[Android.getBest()];
+		var best_genome = saved_generation[saved_generation.length - 1];
 		var nn = new Network();
 		nn.setSave(JSON.parse(best_genome.nn_str));
+		nn.perceptronGeneration();
 	} else {
 		Android.noTrainedNetwork();
 	}
