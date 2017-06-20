@@ -147,9 +147,25 @@ requirejs(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolutio
 
 	}
 
-	window.game = new Game();
+	Game.prototype.begin = function(conf, cb) {
+		Neuvol = new Neuroevolution(conf);
+		var game = new Game();
+		game.start();
+		while(game.generation > 5) {
+			game.update();
+		}
+		cb(game.data);
+	}
 
-	game.start();
-	game.update();
-	game.display();
+	Game.prototype.begin = function() {
+		window.game = this;
+		this.start();
+		this.update();
+		this.display();
+	}
+
+	window.Game = Game;
+
+
+	return Game;
 });
