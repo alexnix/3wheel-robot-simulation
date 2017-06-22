@@ -3,15 +3,12 @@ define(['chart-loader'], function(){
 
 	google.charts.setOnLoadCallback(drawChart);
 	var data, chart, t = 1;
-	var empty_data;
 
 	function drawChart() {	
-		empty_data = function() {
-			data = new google.visualization.DataTable();
-			data.addColumn('number', 'Generatia');
-			data.addColumn('number', 'Fitnessul celui mai bun individ');
-		}
-		empty_data();
+		data = new google.visualization.DataTable();
+		data.addColumn('number', 'Generatia');
+		data.addColumn('number', 'Fitnessul celui mai bun individ');
+
 
 		var options = {
 			 chart: {
@@ -28,13 +25,14 @@ define(['chart-loader'], function(){
 	var chartFacade = {};
 
 	chartFacade.add = function(val) {
-		console.log(val);
+		console.log(t, val);
 		data.addRows([[t++, val]]);
 		chart.draw(data);
 	}	
 
 	chartFacade.empty = function() {
-		// empty_data();
+		t = 1;
+		drawChart();
 	}
 
 	chartFacade.getImage = function() {

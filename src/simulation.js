@@ -49,16 +49,18 @@ requirejs(['game'], function(Game) {
 		},
 	];
 
-	configs.forEach(function(config){
-		var g  = new Game(config);
-		g.start();
-		g.display();
-		setTimeout(function() {
-			while(g.generation < 100)	
+	
+	setTimeout(function() {
+		for(var i in configs) {
+			var config = configs[i];
+			var g  = new Game(config);
+			g.start();
+			g.display();
+			while(g.generation < 150)	
 				g.update();
 			g.saveChart(config.title);
-		}, 1000)
-	});
+		}
+	}, 1000)
 	
 	
 
