@@ -1,4 +1,11 @@
 define(['util'], function(Util){	
+
+	var default_robot_move = function(f, robot) {
+		robot.x += (f[0] > 0.5 ? 3 : -3);
+		robot.y += (f[1] > 0.5 ? 3 : -3);
+		// robot.path.push([this.x, this.y]);
+	};
+
 	var Robot = function(game, size) {
 		this.x = game.width/2;
 		this.y = game.height/2;
@@ -8,17 +15,11 @@ define(['util'], function(Util){
 		this.steps = 0;
 		this.path = [];
 		this.size = size? size: 20;
+		this.move = game.config.robot_move || default_robot_move;
 	}
 
 	Robot.prototype.isDead = function() {
 		return this.steps ++== 1000;
-	}
-
-	Robot.prototype.move = function(f) {
-		this.x += (f[0] > 0.5 ? 3 : -3);
-		this.y += (f[1] > 0.5 ? 3 : -3);
-		// this.theta += f[2];
-		this.path.push([this.x, this.y]);
 	}
 
 	Robot.prototype.display = function(context) {

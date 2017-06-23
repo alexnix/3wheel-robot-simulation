@@ -23,12 +23,18 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 	    };
 	}());
 
-	var default_neuroevolution_config = {
-		population: 50,
-		network:[2, [4], 2],
-		elitism: 2,            
-    	randomBehaviour:0.6,
-    	mutationRate:0.3, 
+	var default_config = {
+		neuroevolution: {
+			population: 50,
+			network:[2, [4], 2],
+			elitism: 2,            
+	    	randomBehaviour:0.6,
+	    	mutationRate:0.3,
+	    },
+
+	    robot_fitness: function(robot, game) {
+	    	return 1e6/robot.score
+	    }
 	};
 
 	var Game = function(config){
@@ -45,7 +51,8 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 			y: 250,
 		};
 		this.target;
-		this.Neuvol = new Neuroevolution(Object.assign(default_neuroevolution_config, config.neuroevolution));
+		this.Neuvol = new Neuroevolution(Object.assign(default_config.neuroevolution, config.neuroevolution));
+		this.config = Object.assign(default_config, config);
 		chart.empty();
 	}
 
@@ -61,6 +68,7 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 	}
 
 	Game.prototype.update = function(){
+
 		if(this.alives == 0){
 			chart.add(1e6/Math.min.apply(null, this.robots.map(r => {
 				return r.score;
@@ -77,7 +85,7 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 
 				var f = this.gen[i].compute(inputs);
 
-				this.robots[i].move(f);
+				this.robots[i].move(f, this.robots[i]);
 				this.robots[i].score += Math.sqrt(
 						(this.robots[i].x - this.target.x)*(this.robots[i].x - this.target.x) +
 						(this.robots[i].y - this.target.y)*(this.robots[i].y - this.target.y) 
@@ -87,9 +95,17 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 					this.robots[i].alive = false;
 					this.alives--;
 					// var fd = Util.discreteFrechetDistance(this.robots[i].path, game.target.path)
-					this.Neuvol.networkScore(this.gen[i], 1e6/this.robots[i].score);
+					var score = this.config.robot_fitness(this.robots[i], this)
+					this.Neuvol.networkScore(this.gen[i], score);
 				}
 			}
+		}
+
+		if(this.config.visual == true) {
+			var self = this;
+			setTimeout(function(){
+				self.update();
+			}, 1);
 		}
 	}
 
