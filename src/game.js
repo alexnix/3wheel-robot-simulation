@@ -33,7 +33,7 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 	    },
 
 	    robot_fitness: function(robot, game) {
-	    	return 1e6/robot.score
+	    	return 1e6/(robot.score+1)
 	    }
 	};
 
@@ -84,6 +84,7 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 				];
 
 				var f = this.gen[i].compute(inputs);
+				
 
 				this.robots[i].move(f, this.robots[i]);
 				this.robots[i].score += Math.sqrt(
@@ -128,8 +129,22 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 		return true;
 	}
 
-	Game.prototype.saveGeneration = function() {
+	var saveDataJson = (function () {
+	    var a = document.createElement("a");
+	    document.body.appendChild(a);
+	    a.style = "display: none";
+	    return function (data, fileName) {
+	        var json = JSON.stringify(data),
+	            blob = new Blob([json], {type: "octet/stream"}),
+	            url = window.URL.createObjectURL(blob);
+	        a.href = url;
+	        a.download = fileName;
+	        a.click();
+	        window.URL.revokeObjectURL(url);
+	    };
+	}());
 
+	Game.prototype.saveGeneration = function() {
 		var genomes = [];
 
 		var max_score = 1e6/this.robots[0].score;
@@ -150,8 +165,9 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 				max_score_idx = i;
 			}
 		}
+			console.log(genomes);
 
-		// genomes is a string that can be used to restore a generation
+		saveDataJson(genomes, "saved_generation.json");
 	}
 
 	Game.prototype.saveChart = function(title) {

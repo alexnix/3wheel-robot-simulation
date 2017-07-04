@@ -4,6 +4,23 @@
 	<title></title>
 </head>
 <body>
+
+	X<input type="number"/>
+	Y<input type="number"/>
+	<button>Calc</button>
+	
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript">
+		
+		$(function(){
+
+			$("button").click(function(){
+				console.log( compute_test() );
+			})
+
+		})
+
+	</script>
 	<script type="text/javascript" src="node_modules/requirejs/require.js" data-main="src/use_best_network.js"></script>
 </body>
 </html>

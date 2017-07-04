@@ -1,46 +1,44 @@
-requirejs(['game'], function(Game) {
+requirejs(['game', 'util'], function(Game, Util) {
 	
 	var configs = [
 		
 		{
-			title: "p50_e2_m0_r06",
 			visual: true,
+			title: "control_total",
 			robot_move: function(f, robot) {
 
-			},
-			
-			robot_fitness: function(robot, game) {
+				if(f[0] > 0.5)
+					robot.x += -1;
+				if(f[1] > 0.5)
+					robot.x += 1;
+
+				if(f[2] > 0.5)
+					robot.y += -1;
+				if(f[3] > 0.5)
+					robot.y += 1;
 
 			},
 
 			neuroevolution: {
-				mutationRate: 0,
+				network: [2, 4, 4],
 			}
 		},
+
 
 	];
 
 	
 	setTimeout(function() {
-		// for(var i in configs) {
-		// 	var config = configs[i];
-		// 	var g  = new Game(config);
-		// 	g.start();
-		// 	g.display();
-		// 	while(g.generation < 150)	
-		// 		g.update();
-		// 	g.saveChart(config.title);
-		// }
-
-		var g  = new Game({
-			visual: true,
-			// robot_move: function(f, robot) {
-			// 	robot.x += 1;
-			// }
-		});
-		g.start();
-		g.update();
-		g.display();
+		for(var i in configs) {
+			var config = configs[i];
+			var g  = new Game(config);
+			g.start();
+			g.display();
+			window.g = g;
+			// while(g.generation < 150)	
+				g.update();
+			// g.saveChart(config.title);
+		}
 	}, 1000)
 	
 	

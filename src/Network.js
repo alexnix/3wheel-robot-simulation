@@ -121,6 +121,7 @@ define([], function(){
 		for(var i in lastLayer.neurons){
 			out.push(lastLayer.neurons[i].value);
 		}
+
 		return out;
 	}
 

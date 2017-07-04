@@ -1,8 +1,8 @@
 define(['util'], function(Util){	
 
 	var default_robot_move = function(f, robot) {
-		robot.x += (f[0] > 0.5 ? 3 : -3);
-		robot.y += (f[1] > 0.5 ? 3 : -3);
+		robot.x += (f[0] > 0.5 ? 1 : -1);
+		robot.y += (f[1] > 0.5 ? 1 : -1);
 		// robot.path.push([this.x, this.y]);
 	};
 
