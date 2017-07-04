@@ -5,9 +5,18 @@
 </head>
 <body>
 
-	X<input type="number"/>
-	Y<input type="number"/>
-	<button>Calc</button>
+	<img src="robot_vision.jpg" />
+	<br/>
+	X: <input id="x" type="number"/>
+	Y: <input id="y" type="number"/>
+	<button>Calculează</button>
+	<pre></pre>
+	<p>
+		out[0] > 0.5 => x++<br/>
+		out[1] > 0.5 => x--<br/>
+		out[2] > 0.5 => y++<br/>
+		out[3] > 0.5 => y--<br/>
+	</p>
 	
 	<script src="node_modules/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript">
@@ -15,7 +24,9 @@
 		$(function(){
 
 			$("button").click(function(){
-				console.log( compute_test() );
+				$("pre").html(
+					JSON.stringify(compute_test($("#x").val(), $("#y").val()))
+				);
 			})
 
 		})
