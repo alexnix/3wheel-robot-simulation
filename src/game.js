@@ -22,6 +22,8 @@ define(["Neuroevolution", "chart", "Robot", "Target"], function(Neuroevolution, 
 	        window.URL.revokeObjectURL(url);
 	    };
 	}());
+	
+	dasdasdas
 
 	var default_config = {
 		neuroevolution: {
